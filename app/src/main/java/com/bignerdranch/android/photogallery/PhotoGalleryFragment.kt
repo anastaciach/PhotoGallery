@@ -13,6 +13,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -24,7 +25,6 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.scalars.ScalarsConverterFactory
-
 private const val TAG = "PhotoGalleryFragment"
 
 class PhotoGalleryFragment : Fragment() {
@@ -47,13 +47,17 @@ class PhotoGalleryFragment : Fragment() {
                     BitmapDrawable(resources, bitmap)
                 photoHolder.bindDrawable(drawable)
             }
-        lifecycle.addObserver(thumbnailDownloader)
+       // lifecycle.addObserver(thumbnailDownloader)
+        lifecycle.addObserver(thumbnailDownloader.fragmentLifecycleObserver)
     }
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        viewLifecycleOwner.lifecycle.addObserver(
+            thumbnailDownloader.viewLifecycleObserver)
+
         val view =
             inflater.inflate(R.layout.fragment_photo_gallery, container, false)
         photoRecyclerView =
@@ -71,10 +75,16 @@ class PhotoGalleryFragment : Fragment() {
             })
 
     }
+    override fun onDestroyView() {
+        super.onDestroyView()
+        viewLifecycleOwner.lifecycle.removeObserver(
+            thumbnailDownloader.viewLifecycleObserver
+        )
+    }
     override fun onDestroy() {
         super.onDestroy()
         lifecycle.removeObserver(
-            thumbnailDownloader
+            thumbnailDownloader.fragmentLifecycleObserver
         )
     }
     private class PhotoHolder(private val itemImageView: ImageView) :
@@ -112,4 +122,5 @@ class PhotoGalleryFragment : Fragment() {
         fun newInstance() =
             PhotoGalleryFragment()
     }
+
 }
