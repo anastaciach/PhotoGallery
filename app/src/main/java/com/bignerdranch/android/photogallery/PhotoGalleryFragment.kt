@@ -28,6 +28,7 @@ private const val TAG = "PhotoGalleryFragment"
 class PhotoGalleryFragment : Fragment() {
     private lateinit var photoGalleryViewModel: PhotoGalleryViewModel
     private lateinit var photoRecyclerView: RecyclerView
+    private lateinit var thumbnailDownloader: ThumbnailDownloader<PhotoHolder>
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         /*val retrofit: Retrofit =
@@ -35,7 +36,10 @@ class PhotoGalleryFragment : Fragment() {
                 .baseUrl("https://www.flickr.com/")
                 .addConverterFactory(ScalarsConverterFactory.create())
                 .build()*/
+        retainInstance = true
         photoGalleryViewModel = ViewModelProviders.of(this).get(PhotoGalleryViewModel::class.java)
+        thumbnailDownloader = ThumbnailDownloader()
+        lifecycle.addObserver(thumbnailDownloader)
     }
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -50,15 +54,20 @@ class PhotoGalleryFragment : Fragment() {
             GridLayoutManager(context, 3)
         return view
     }
-    override fun onViewCreated(view: View,
-                               savedInstanceState: Bundle?) {
-        super.onViewCreated(view,
-            savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         photoGalleryViewModel.galleryItemLiveData.observe(
             viewLifecycleOwner,
             Observer { galleryItems ->
                 photoRecyclerView.adapter = PhotoAdapter(galleryItems)
             })
+
+    }
+    override fun onDestroy() {
+        super.onDestroy()
+        lifecycle.removeObserver(
+            thumbnailDownloader
+        )
     }
     private class PhotoHolder(private val itemImageView: ImageView) :
         RecyclerView.ViewHolder(itemImageView) {
