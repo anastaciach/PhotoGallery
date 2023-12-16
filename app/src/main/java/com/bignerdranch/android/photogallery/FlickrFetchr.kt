@@ -39,12 +39,9 @@ class FlickrFetchr {
     }
     fun searchPhotos(query: String):
             LiveData<List<GalleryItem>> {
-        return fetchPhotoMetadata(flickrApi.searchPhotos(query
-        ))
+        return fetchPhotoMetadata(flickrApi.searchPhotos(query))
     }
-    private fun
-            fetchPhotoMetadata(flickrRequest:
-                               Call<FlickrResponse>)
+    private fun fetchPhotoMetadata(flickrRequest: Call<FlickrResponse>)
             : LiveData<List<GalleryItem>> {
         val responseLiveData: MutableLiveData<List<GalleryItem>> =
             MutableLiveData()
