@@ -9,20 +9,27 @@ import android.util.Log
 import androidx.core.app.NotificationManagerCompat
 
 private const val TAG = "NotificationReceiver"
-class NotificationReceiver :
-    BroadcastReceiver() {
-    override fun onReceive(context: Context,
-                           intent: Intent
-    ) {
-        Log.i(TAG, "received result:$resultCode")
+
+class NotificationReceiver : BroadcastReceiver() {
+
+    override fun onReceive(context: Context, intent: Intent) {
+        Log.i(TAG, "Received result: $resultCode")
         if (resultCode != Activity.RESULT_OK) {
-// Активность переднего плана тменила возврат трансляции.
+            // A foreground activity cancelled the broadcast
+            return
         }
-        val requestCode =
-            intent.getIntExtra(PollWorker.REQUEST_CODE, 0)
-        val notification: Notification =
+
+        val requestCode = intent.getIntExtra(PollWorker.REQUEST_CODE, 0)
+        val notification: Notification? =
             intent.getParcelableExtra(PollWorker.NOTIFICATION)
-        val notificationManager = NotificationManagerCompat.from(context)
-        notificationManager.notify(requestCode, notification)
+
+        if (notification != null) {
+            // Теперь у вас есть ненулевое значение для использования
+            val notificationManager = NotificationManagerCompat.from(context)
+            notificationManager.notify(requestCode, notification)
+        } else {
+            // Обработка случая, когда значение null
+            Log.e(TAG, "Notification is null")
+        }
     }
 }
