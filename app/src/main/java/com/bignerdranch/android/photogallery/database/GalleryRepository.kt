@@ -15,27 +15,19 @@ class GalleryRepository private constructor(context: Context) {
     )
         .build()
     private val executor = Executors.newSingleThreadExecutor()
-    fun getPhotos(): LiveData<List<Item>> = database.galleryDao().getphotos()
+    fun getPhotos() = database.galleryDao().getphotos()
     private fun GalleryItem.toItem(): Item {
         return Item(title, id, url)
     }
 
 
-    fun addPhoto(photo: GalleryItem) {
-        val item = photo.toItem()
-        executor.execute {
-            if (database.galleryDao().getphoto(item.url)!=item){
-                database.galleryDao().addphoto(item)
-            }
-        }
+    fun addPhoto(photo: Item) {
+        database.galleryDao().addphoto(photo)
     }
 
-    fun deleteAllPhotos() {
-        executor.execute {
+        fun deleteAllPhotos() {
             database.galleryDao().deletephotos()
         }
-    }
-
     companion object {
         private var INSTANCE: GalleryRepository? = null
         fun initialize(context: Context) {

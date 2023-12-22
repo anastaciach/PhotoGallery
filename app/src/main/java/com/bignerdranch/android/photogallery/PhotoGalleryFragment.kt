@@ -1,5 +1,6 @@
 package com.bignerdranch.android.photogallery
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -26,6 +27,7 @@ import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
 import com.bignerdranch.android.photogallery.api.FlickrApi
 import com.bignerdranch.android.photogallery.FlickrFetchr
+import com.bignerdranch.android.photogallery.database.GalleryRepository
 import com.squareup.picasso.Picasso
 import retrofit2.Retrofit
 import retrofit2.Call
@@ -36,11 +38,16 @@ import java.util.concurrent.TimeUnit
 
 private const val TAG = "PhotoGalleryFragment"
 private const val POLL_WORK = "POLL_WORK"
+
 class PhotoGalleryFragment : Fragment() {
 
     private lateinit var photoGalleryViewModel: PhotoGalleryViewModel
     private lateinit var photoRecyclerView: RecyclerView
-
+    private val galleryRepository = GalleryRepository.get()
+    interface Callbacks {
+        fun onPhotoSelect(photoId: String)
+    }
+    private var callbacks: Callbacks? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -49,7 +56,10 @@ class PhotoGalleryFragment : Fragment() {
         photoGalleryViewModel = ViewModelProviders.of(this).get(PhotoGalleryViewModel::class.java)
 
     }
-
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        callbacks = context as Callbacks?
+    }
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -72,6 +82,10 @@ class PhotoGalleryFragment : Fragment() {
         : RecyclerView.ViewHolder(itemImageView)
     {
         val bindImageView: (ImageView) = itemImageView
+    }
+    override fun onDetach() {
+        super.onDetach()
+        callbacks = null
     }
     private inner class PhotoAdapter(private val galleryItems: List<GalleryItem>)
         : RecyclerView.Adapter<PhotoHolder>() {
@@ -173,7 +187,7 @@ class PhotoGalleryFragment : Fragment() {
                 true
             }
             R.id.menu_item_delete_database_photos -> {
-                PhotoGalleryFragmentDirections.deletePhotosFromDatabase()
+                photoGalleryViewModel.deletephotos()
                 Toast.makeText(
                     context,
                     R.string.delete_photos_from_database_success,
@@ -186,7 +200,28 @@ class PhotoGalleryFragment : Fragment() {
         }
     }
 
+    private inner class GalleryHolder(view: View)
+        : RecyclerView.ViewHolder(view), View.OnClickListener {
+        private lateinit var galleryItem: GalleryItem
+        private val titleTextView: TextView = itemView.findViewById(R.id.photo_title)
+        private val urlView: TextView = itemView.findViewById(R.id.photo_url)
 
+        init {
+            itemView.setOnClickListener(this)
+        }
+
+        fun bind(galleryItem: GalleryItem) {
+            this.galleryItem = galleryItem
+            titleTextView.text = this.galleryItem.title
+            urlView.text = this.galleryItem.url
+        }
+
+        override fun onClick(v: View) {
+            val galleryItem = GalleryItem()
+            callbacks?.onPhotoSelect(galleryItem.id)
+        }
+
+    }
     companion object {
         fun newInstance() = PhotoGalleryFragment()
     }
