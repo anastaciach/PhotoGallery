@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
@@ -166,6 +167,19 @@ class PhotoGalleryFragment : Fragment() {
                 }
                 activity?.invalidateOptionsMenu()
                 return true
+            }
+            R.id.menu_item_database_photos -> {
+                photoGalleryViewModel.showDatabaseGallery()
+                true
+            }
+            R.id.menu_item_delete_database_photos -> {
+                PhotoGalleryFragmentDirections.deletePhotosFromDatabase()
+                Toast.makeText(
+                    context,
+                    R.string.delete_photos_from_database_success,
+                    Toast.LENGTH_SHORT
+                ).show()
+                true
             }
             else ->
                 super.onOptionsItemSelected(item)

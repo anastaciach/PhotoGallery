@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.switchMap
 import com.bignerdranch.android.photogallery.FlickrFetchr
+import com.bignerdranch.android.photogallery.database.GalleryRepository
 
 class PhotoGalleryViewModel (private val app: Application) : AndroidViewModel(app) {
 
@@ -32,5 +33,7 @@ class PhotoGalleryViewModel (private val app: Application) : AndroidViewModel(ap
         QueryPreferences.setStoredQuery(app, query)
         mutableSearchTerm.value = query
     }
-
+    fun showDatabaseGallery(){
+        val crimeListLiveData  = GalleryRepository.get()
+    }
 }
