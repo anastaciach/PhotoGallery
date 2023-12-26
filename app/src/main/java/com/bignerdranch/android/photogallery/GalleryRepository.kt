@@ -1,9 +1,9 @@
-package com.bignerdranch.android.photogallery.database
+package com.bignerdranch.android.photogallery
 
 import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.room.Room
-import com.bignerdranch.android.photogallery.GalleryItem
+import com.bignerdranch.android.photogallery.database.GalleryDatabase
 import java.util.concurrent.Executors
 
 private const val DATABASE_NAME = "gallery"
@@ -15,19 +15,23 @@ class GalleryRepository private constructor(context: Context) {
     )
         .build()
     private val executor = Executors.newSingleThreadExecutor()
-    fun getPhotos() = database.galleryDao().getphotos()
+    fun getPhotos(): LiveData<List<Item>> = database.galleryDao().getphotos()
     private fun GalleryItem.toItem(): Item {
         return Item(title, id, url)
     }
-
-
-    fun addPhoto(photo: Item) {
-        database.galleryDao().addphoto(photo)
+    fun addPhoto(photo: GalleryItem) {
+        val item = photo.toItem()
+        executor.execute {
+            if (database.galleryDao().getphoto(item.url)!=item){
+                database.galleryDao().addphoto(item)
+            }
+        }
     }
-
-        fun deleteAllPhotos() {
+    fun deleteAllPhotos() {
+        executor.execute {
             database.galleryDao().deletephotos()
         }
+    }
     companion object {
         private var INSTANCE: GalleryRepository? = null
         fun initialize(context: Context) {

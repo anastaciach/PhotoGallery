@@ -3,16 +3,14 @@ package com.bignerdranch.android.photogallery
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
+
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.switchMap
-import com.bignerdranch.android.photogallery.FlickrFetchr
-import com.bignerdranch.android.photogallery.database.GalleryRepository
-import com.bignerdranch.android.photogallery.database.Item
 
 class PhotoGalleryViewModel (private val app: Application) : AndroidViewModel(app) {
     private val galleryRepository = GalleryRepository.get()
     val galleryItemLiveData: LiveData<List<GalleryItem>>
+    val itemLiveData: LiveData<List<Item>> = galleryRepository.getPhotos()
     private val flickrFetchr = FlickrFetchr()
     private val mutableSearchTerm = MutableLiveData<String>()
     val searchTerm: String
@@ -35,12 +33,13 @@ class PhotoGalleryViewModel (private val app: Application) : AndroidViewModel(ap
         mutableSearchTerm.value = query
     }
     fun showDatabaseGallery(){
+       // PhotoGalleryDatabaseFragment()
         galleryRepository.getPhotos()
     }
     fun deletephotos(){
         galleryRepository.deleteAllPhotos()
     }
-    fun addPhotoToDatabase(photo: Item) {
-        galleryRepository.addPhoto(photo)
+    fun addPhoto(photo: GalleryItem) {
+            galleryRepository.addPhoto(photo)
     }
 }
